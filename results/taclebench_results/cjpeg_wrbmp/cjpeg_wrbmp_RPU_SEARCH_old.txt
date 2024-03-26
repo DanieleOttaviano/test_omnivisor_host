@@ -1,0 +1,3 @@
+# Baseline 7772, target slowdown 1.2
+it,rep,apu_bandwidth,fpga_bandwidth,rpu_bandwidth,time,in_target,slowdown
+0,0,950.0000000000,14.0000000000,10.0000000000,24022,0,3.0908389089

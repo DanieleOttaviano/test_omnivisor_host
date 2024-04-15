@@ -8,6 +8,6 @@ RUNPHI_DIR=$(dirname "${TEST_DIR}")
 RUNPHI_SCRIPTS_DIR=${RUNPHI_DIR}/scripts
 
 # Recompile Jailhouse
-${RUNPHI_SCRIPTS_DIR}/compile/jailhouse_compile.sh -r
+${RUNPHI_SCRIPTS_DIR}/compile/jailhouse_compile.sh -r all
 # Load Jailhouse on board
 ${RUNPHI_SCRIPTS_DIR}/remote/load_components_to_remote.sh -j

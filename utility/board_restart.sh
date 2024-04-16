@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # DIRECTORIES
-CURRENT_DIR=$(dirname -- "$(readlink -f -- "$0")")
-TEST_OMNV_DIR=$(dirname "${CURRENT_DIR}")
-UTILITY_DIR=${TEST_OMNV_DIR}/utility
+source "$(dirname "$0")/default_directories.sh"
 
 # BOARD INFO
 source ${UTILITY_DIR}/board_info.sh

@@ -29,6 +29,7 @@ RUNPHI_DIR=$(dirname "${TEST_DIR}")
 RUNPHI_SCRIPTS_DIR=${RUNPHI_DIR}/scripts
 ENVIRONMENT_DIR=${RUNPHI_DIR}/environment/${target}/${backend}
 JAILHOUSE_DIR=${ENVIRONMENT_DIR}/build/jailhouse
+JAIL_CONFIG_DIR=${JAILHOUSE_DIR}/include/jailhouse/config.h
 BITSTREAM_DIR=${ENVIRONMENT_DIR}/output/hardware/bitstreams
 BOOT_DIR=${ENVIRONMENT_DIR}/output/boot
 

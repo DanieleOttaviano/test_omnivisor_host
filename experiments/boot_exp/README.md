@@ -2,52 +2,47 @@
 
 This folder contains a set of scripts to test the boot times of a virtual machine over local and remote processors.
 
-Supported Board:
-- [x] Zynq Ultrascale +
+### Test Fast Script
 
-Supported Cores:
-- [x] Cortex-a53 (APU)
-- [x] Cortex-R5F (RPU)
-- [x] Pico32 on FPGA (RISC-V)
+To replicate the results for ECRTS, execute the following script:
 
-**Prerequisite**
-
-To launch these scripts you need to:
-- Use RunPHI project to install and configure the Omnivisor on your board.
-- Configure specific board information (IP, serial, etc ...) in the script: "test_omnivisor_host/utility/board_info.sh"
-- Configure the paths of the directories (RunPHI and Jailhouse/Omnivisor) in the script: "test_omnivisor_host/utility/default_directories.sh"
-
-***Prepare Images***
-
-The test use a set of images with different sizes for each processor. To create these images you can use the following scripts:
 ```bash
-./create_images_APU.sh
-./create_images_RISCV.sh
-./create_images_RPU.sh
+./ecrts_boot_tests.sh
 ```
 
-Now that the images are ready you need to copy them in the board directory. You can use the runPHI script:
+### Prepare Images
+
+The test uses a set of images with different sizes for each processor. To create these images, you can use the following scripts:
+
+```bash
+./create_Images_APU.sh
+./create_Images_RISCV.sh
+./create_Images_RPU.sh
+```
+
+Once the images are ready, you need to copy them to the board directory. You can use the RunPHI script:
+
 ```bash
 ./scripts/remote/load_install_dir_to_remote.sh 
 ```
 
+**Launching Tests**
 
-**Launch Tests**
+Launch the script \`start_boot_exp.sh\` to run the experiments. The script initiates the VM Boot test on a ZCU board on the specified processor:
 
-launch the script start_boot_exp.sh to run the experiments. The script launch the VM Boot test on a ZCU board on the specified processor:
-- [-r \<repetitions\>]
-- [-c \<core\> (APU, RPU, RISCV)]
-- [-s save the results on the host machine]
-- [-h help]
+- \`-r <repetitions>\`
+- \`-c <core>\` (Options: APU, RPU, RISCV)
+- \`-s\` Save the results on the host machine
+- \`-h\` Help
 
-example:
+Example:
+
 ```bash
 ./start_boot_exp.sh -r 100 -c APU -s
 ./start_boot_exp.sh -r 100 -c RPU -s
 ./start_boot_exp.sh -r 100 -c RISCV -s
 ```
 
-*Results*
+**Results**
 
-The raw results are saved in the directory "test_omnnivisor_host/results/boot_results". 
-To visualize the results launch the scripts in the "test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb".
+The raw results are saved in the directory \`test_omnnivisor_host/results/boot_results\`. Visualize the results using the provided notebook: \`test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb\`.

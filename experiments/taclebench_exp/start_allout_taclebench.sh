@@ -14,17 +14,17 @@ usage() {
 
 # BOARD'S DIRECTORIES
 JAIL_SCRIPT_PATH="/root/scripts_jailhouse_kria"
-TACLE_EXP_PATH="/root/tests/omnivisor/taclebench_exp"
-BENCH_DIR="/root/tests/omnivisor/taclebench_exp/inmates"
+TACLE_EXP_PATH="/root/tests/test_omnivisor_guest/taclebench_exp"
+BENCH_DIR="/root/tests/test_omnivisor_guest/taclebench_exp/inmates"
 CELL_PATH="/root/jailhouse/configs/arm64"
-UTILITY_PATH="/root/tests/omnivisor/utility"
+UTILITY_DIR="/root/tests/test_omnivisor_guest/utility"
 
 # LOCAL DIRECTORIES
 TACLEBENCH_EXP_DIR=$(dirname -- "$(readlink -f -- "$0")")
 TEST_OMNV_DIR=$(dirname "${TACLEBENCH_EXP_DIR}")
 RESULTS_DIR=${TEST_OMNV_DIR}/results/taclebench_results
 UTILITY_DIR=${TEST_OMNV_DIR}/utility
-TARGET_EXP_PATH="/root/tests/omnivisor/taclebench_exp"
+TARGET_EXP_PATH="/root/tests/test_omnivisor_guest/taclebench_exp"
 RES_DIR="${TACLEBENCH_EXP_DIR}/results/"
 
 # BOARD INFO
@@ -188,13 +188,13 @@ if [[ $? -eq 128 ]] || [[ $? -eq 255 ]]; then exit 43; fi
 
 # Start Omnivisor
 echo "Starting Omnivisor"
-timeout -s 2 ${TIMEOUT_MINUTES}m ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/jailhouse_start.sh"
+timeout -s 2 ${TIMEOUT_MINUTES}m ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/jailhouse_start.sh"
 if [[ $? -ne 0 ]]; then exit 43; fi
 
 if [[ ${SEARCH} -eq 0 ]]; then
     # Apply Temporal Isolation
     echo "Starting bandwidth regulation"
-    timeout -s 2 ${TIMEOUT_MINUTES}m ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/apply_temp_reg.sh -B ${APU_BANDWIDTH} -r -f -a"
+    timeout -s 2 ${TIMEOUT_MINUTES}m ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/apply_temp_reg.sh -B ${APU_BANDWIDTH} -r -f -a"
     if [[ $? -ne 0 ]]; then exit 43; fi
 fi
 
@@ -361,7 +361,7 @@ for bench_name in $directories; do
             fi
 
             echo "[$(date +"%H:%M:%S")] APPLYING TEMP REGULATION"
-            timeout -s 2 5m ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/apply_temp_reg.sh -B ${BANDWIDTH} -r -f -a"
+            timeout -s 2 5m ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/apply_temp_reg.sh -B ${BANDWIDTH} -r -f -a"
 
             if [[ $? -ne 0 ]]; then exit 43; fi
             # printf "TIME: %d\n" ${time}
@@ -385,7 +385,7 @@ for bench_name in $directories; do
                 save_on_file
 
                 echo "[$(date +"%H:%M:%S")] Run benchmark on board"
-                time=`timeout -s 2 ${timeout_s}s ssh root@${IP} "bash /root/tests/omnivisor/taclebench_exp/single_taclebench.sh -c ${core} -b ${bench_name}"`
+                time=`timeout -s 2 ${timeout_s}s ssh root@${IP} "bash /root/tests/test_omnivisor_guest/taclebench_exp/single_taclebench.sh -c ${core} -b ${bench_name}"`
                 if [[ $? -ne 0 ]]; then exit 43; fi
 
                 slowdown=`echo " $time/$baseline" | bc -l`
@@ -439,7 +439,7 @@ for bench_name in $directories; do
 
             save_on_file
             echo "[$(date +"%H:%M:%S")] Run benchmark on board"
-            time=`timeout -s 2 ${timeout_s}s ssh root@${IP} "bash /root/tests/omnivisor/taclebench_exp/single_taclebench.sh -c ${core} -b ${bench_name}"`
+            time=`timeout -s 2 ${timeout_s}s ssh root@${IP} "bash /root/tests/test_omnivisor_guest/taclebench_exp/single_taclebench.sh -c ${core} -b ${bench_name}"`
             if [[ $? -ne 0 ]]; then exit 43; fi
 
             printf "%d\n" ${time}

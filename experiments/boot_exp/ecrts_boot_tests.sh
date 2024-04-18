@@ -8,7 +8,7 @@ echo "Clean Restart Board..."
 bash ${UTILITY_DIR}/board_restart.sh
 
 # Create and Load Images 
-echo "**************** Create and Laad Images ****************"
+echo "**************** Create and Load Images ****************"
 echo "Creating Images..."
 ./create_Images_APU.sh
 ./create_Images_RISCV.sh

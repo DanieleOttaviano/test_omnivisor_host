@@ -5,10 +5,15 @@ usage() {
   This script launch the taclebench suit on the selected core:\r\n \
       [-c <core under isolation test> (RPU, RISCV)]\r\n \
       [-d apply disturb from all the managers (APU, RPU-1, FPGA)]\r\n \
+      [-r <num> number of repetitions]\r\n \
       [-T apply temporal isolation (QoS + Memguard)]\r\n \
       [-s save the results]\r\n \
       [-p print the results in and save in imgs directory]\r\n \
+      [-e <name_ext> saved file name extension]\r\n \
+      [-f <file_state_name> save state on file with passed filename]\r\n \
+      [-S <target_slowdown> binary search for target slowdown]\r\n \
       [-h help]" 1>&2
+
     exit 1
 }
 
@@ -138,6 +143,7 @@ done
 save_on_file() {
     echo "$CURRENT_BENCH $it $rep $BANDWIDTH $HIGHER_BOUND_BANDWIDTH $LOWER_BOUND_BANDWIDTH $found_target_bandwidth $it_under_target $slowdowns_list" > ${STATE_FILENAME}
 }
+
 if [[ $SAVE_STATE_ON_FILE -eq 1 ]]; then
     if [[ -f ${STATE_FILENAME} ]]; then
         read -r CURRENT_BENCH it rep BANDWIDTH HIGHER_BOUND_BANDWIDTH LOWER_BOUND_BANDWIDTH found_target_bandwidth it_under_target slowdowns_list <${STATE_FILENAME}

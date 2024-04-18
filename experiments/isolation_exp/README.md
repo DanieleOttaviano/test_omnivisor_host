@@ -4,11 +4,14 @@ This folder contains a set of scripts designed to evaluate the isolation capabil
 
 ### Test Fast Script
 
-To replicate the results for ECRTS, execute the following script:
+To replicate the ECRTS results, execute the following script:
 
 ```bash
 ./ecrts_isolation_tests.sh
 ```
+
+To replicate the test step by step continue reading.
+
 
 ### Launching Single Experiment
 

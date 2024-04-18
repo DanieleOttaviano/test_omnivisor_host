@@ -1,6 +1,6 @@
 # **Test Omnivisor Host**
 
-This repository contains scripts and materials necessary to replicate experiments testing the Omnivisor (https://github.com/DanieleOttaviano/jailhouse).
+This repository contains scripts and materials to replicate the experiments on Omnivisor (https://github.com/DanieleOttaviano/jailhouse).
 
 ## Overview
 

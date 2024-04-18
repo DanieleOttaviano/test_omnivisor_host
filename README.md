@@ -36,4 +36,4 @@ Refer to the README in each directory under "experiments/" for detailed instruct
 
 ## Results
 
-Raw results are saved in the directory `test_omnnivisor_host/results`. Visualize the results using the provided notebook: `test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb`.
+Results can be visualized in the provided notebook: `test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb`.

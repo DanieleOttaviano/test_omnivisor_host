@@ -5,8 +5,8 @@ usage() {
         This script Start the Isolation test on the selected processor with the selected disturb sources:\r\n \
             [-c <core under isolation test> (RPU, RISCV)]\r\n \
             [-d <source of disturb> (APU, RPU1, FPGA, ALL)]\r\n \
-            [-S apply spatial isolation (XMPUs)]\r\n \
-            [-T apply temporal isolation (QoS + Memguard)]\r\n \
+            [-S apply spatial isolation (enable XMPUs)]\r\n \
+            [-T apply temporal isolation (enable QoS + Memguard)]\r\n \
             [-s save the results]\r\n \
             [-h help]" 1>&2
     exit 1
@@ -79,7 +79,6 @@ echo "Test name: ${TEST_NAME} (duration: ${TEST_DURATION}s)"
 echo "Spatial Isolation: ${SPAT_ISOL}"
 echo "Temporal Isolation: ${TEMP_ISOL}"
 echo "Save txt results: ${SAVE}"
-echo "Print and save png results: ${PRINT}"
 echo ""
 
 
@@ -98,97 +97,40 @@ fi
 
 # Apply Spatial Isolation
 if [[ $SPAT_ISOL -eq 1 ]]; then
-    bash ${UTILITY_DIR}/enable_xmpu.sh > /dev/null 2>&1
+    bash ${UTILITY_DIR}/enable_xmpu.sh 
 else
-    bash ${UTILITY_DIR}/disable_xmpu.sh > /dev/null 2>&1
+    bash ${UTILITY_DIR}/disable_xmpu.sh
 fi
 
 # Start Omnivisor
 echo "Starting Omnivisor"
-ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/jailhouse_start.sh" > /dev/null 2>&1
+ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/jailhouse_start.sh" > /dev/null 2>&1
 
 echo "Starting bandwidth regulation"
 # Apply Temporal Isolation
 if [[ "${TEMP_ISOL}" -eq "1" ]]; then
-    # ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/apply_temp_reg.sh -r -f -a" > /dev/null 2>&1 &
-    ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/apply_temp_reg.sh -B 5 -r -f -a" > /dev/null 2>&1
+    # 5mb/s of bandwidth
+    ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/apply_temp_reg.sh -B 5 -r -f -a" # > /dev/null 2>&1
 else
-    ssh root@${IP} "bash ${BOARD_UTILITY_PATH}/apply_temp_reg.sh -B 950 -r -f -a" > /dev/null 2>&1
+    # 950mb/s of bandwidth is enough to have the same behaviour as without temporal isolation
+    ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/apply_temp_reg.sh -B 950 -r -f -a" # > /dev/null 2>&1
 fi
 
 
 ## START TEST
+# disturb (bomber) and test are started in parallel
 echo "Starting Test on ${core}"
 ssh root@${IP} "
     bash ${BOARD_ISOLATION_EXP_PATH}/${SCRIPT_NAME}.sh -c ${core} -n ${TEST_NAME} &
     bash ${BOARD_ISOLATION_EXP_PATH}/${SCRIPT_NAME}_bomber.sh -c ${core} -d ${disturb} -S ${SPAT_ISOL}" #> /dev/null 2>&1
 
-# # Time without interference
-# sleep ${SOLO_TIME}
 
-# # Start the interferences
-# if [[ $disturb == "APU" || $disturb == "ALL" ]]; then
-#     echo "Starting APU membomb"
-#     if [[ "${SPAT_ISOL}" -eq "0" ]]; then
-#         # Without spatial isolation the APU would crash the system
-#         # Therefore to save the experiemnt we do not start the APU
-#         # ssh root@${IP} "${INMATES_PATH}/APU/flip_bit"
-#         :
-#     else
-#         # Start APU membomb
-#         ssh root@${IP} "${BOARD_ISOLATION_EXP_PATH}/bandwidth -l1 -c1 -p 0 -d 0 -b \"-a write -m 4096 -i12\" &
-#                         ${BOARD_ISOLATION_EXP_PATH}/bandwidth -l1 -c2 -p 0 -d 0 -b \"-a write -m 4096 -i12\" &
-#                         ${BOARD_ISOLATION_EXP_PATH}/bandwidth -l1 -c3 -p 0 -d 0 -b \"-a write -m 4096 -i12\" &" &
-#     fi
-
-#     if [[ $disturb == "ALL" ]]; then
-#         sleep ${SOLO_TIME}
-#     else
-#         sleep ${FULL_INTERFERENCE_TIME}
-#     fi
-# fi
-# if [[ $disturb == "RPU1" || $disturb == "ALL" ]]; then
-#     # Start RPU1 membomb
-#     echo "Starting RPU1 membomb"
-#     ssh root@${IP} "cd /lib/firmware && 
-#                     echo RPU1-${core}-membomb-demo.elf > /sys/class/remoteproc/remoteproc1/firmware && 
-#                     echo start > /sys/class/remoteproc/remoteproc1/state" &
-
-#     if [[ $disturb == "ALL" ]]; then
-#         sleep ${SOLO_TIME}
-#     else
-#         sleep ${FULL_INTERFERENCE_TIME}
-#     fi
-# fi
-# if [[ $disturb == "FPGA" || $disturb == "ALL" ]]; then
-#     # Start traffic generators
-#     echo "Starting FPGA Traffic Generator 1"
-#     if [[ $core == "RPU" ]]; then
-#         ssh root@${IP} "devmem ${TRAFFIC_GENERATOR_1} 64 1" &
-#     elif [[ $core == "RISCV" ]]; then
-#         ssh root@${IP} "devmem ${TRAFFIC_GENERATOR_2} 64 1" &
-#     fi
-
-#     # If ALL power on another traffic generator
-#     if [[ $disturb == "ALL" ]]; then
-#         sleep ${SOLO_TIME}
-#         echo "Starting FPGA Traffic Generator 2"
-#         ssh root@${IP} "devmem ${TRAFFIC_GENERATOR_3} 64 1" &
-#         sleep ${SOLO_TIME}
-#     else
-#         sleep ${FULL_INTERFERENCE_TIME}
-#     fi
-# fi
-
-
-# if [[ "${TEMP_ISOL}" -eq "1" ]]; then
 echo "Stopping bandwidth regulation"
-ssh root@${IP} "/root/jailhouse/tools/jailhouse qos disable"
-# fi
+ssh root@${IP} "${BOARD_JAILHOUSE_PATH}/tools/jailhouse qos disable"
 
 # Disable Omnivisor
 echo "Stopping Omnivisor"
-ssh root@${IP} "/root/jailhouse/tools/jailhouse disable" # > /dev/null 2>&1
+ssh root@${IP} "${BOARD_JAILHOUSE_PATH}/tools/jailhouse disable" # > /dev/null 2>&1
 # echo "/root/jailhouse/tools/jailhouse disable" > ${SERIAL_PORT}
 
 ## STOP TEST
@@ -216,7 +158,7 @@ if [[ $disturb == "FPGA" || $disturb == "ALL" ]]; then
 fi
 
 # Save Results from memory (BOARD)
-ssh root@${IP} "${BOARD_UTILITY_PATH}/save_shm.sh ${TEST_NAME}"
+ssh root@${IP} "${BOARD_UTILITY_DIR}/save_shm.sh ${TEST_NAME}"
 
 # Save Results
 if [[ ${SAVE} -eq 1 ]]; then
@@ -224,4 +166,3 @@ if [[ ${SAVE} -eq 1 ]]; then
     scp -r "root@${IP}:${BOARD_ISOLATION_RESULTS_PATH}/${TEST_NAME}.txt" "${ISOLATION_RESULTS_DIR}/"
     cat ${ISOLATION_RESULTS_DIR}/${TEST_NAME}.txt 
 fi
-

@@ -9,7 +9,7 @@ COMPILE_SCRIPT="${RUNPHI_SCRIPTS_DIR}/compile/jailhouse_compile.sh"
 SOURCE_FILE="${JAILHOUSE_DIR}/inmates/demos/arm/boot-demo.c"
 BINARY_DIR="${JAILHOUSE_DIR}/inmates/demos/arm64"
 CELL_DIR="${JAILHOUSE_DIR}/configs/arm64"
-OUTPUT_BIN_DIR="${TEST_OMNV_GUEST_DIR}/boot_exp/inmates/APU"
+OUTPUT_BIN_DIR="${TEST_OMNV_GUEST_DIR}/experiments/boot_exp/inmates/APU"
 
 # Create the output directory
 mkdir -p "${OUTPUT_BIN_DIR}"

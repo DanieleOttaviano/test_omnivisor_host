@@ -16,7 +16,7 @@ directories=$(ls -d ${BENCH_DIR}/*/ | xargs -n1 basename)
 # Iterate over each directory name 
 for bench_name in $directories; do
     echo Compiling: $bench_name
-    "$COMPILE_SCRIPT" -r -B $bench_name
+    "$COMPILE_SCRIPT" -r all -B $bench_name
     mkdir -p ${OUTPUT_DIR}/${bench_name}
     cp ${ARMR5_DIR}/baremetal-demo.bin                  ${OUTPUT_DIR}/${bench_name}/RPU-${bench_name}-demo.bin
     cp ${ARMR5_DIR}/baremetal-demo_tcm.bin              ${OUTPUT_DIR}/${bench_name}/RPU-${bench_name}-demo_tcm.bin

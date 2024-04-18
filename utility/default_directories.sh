@@ -29,10 +29,11 @@ RUNPHI_DIR=$(dirname "${TEST_DIR}")
 RUNPHI_SCRIPTS_DIR=${RUNPHI_DIR}/scripts
 ENVIRONMENT_DIR=${RUNPHI_DIR}/environment/${target}/${backend}
 JAILHOUSE_DIR=${ENVIRONMENT_DIR}/build/jailhouse
+JAIL_CONFIG_DIR=${JAILHOUSE_DIR}/include/jailhouse/config.h
 BITSTREAM_DIR=${ENVIRONMENT_DIR}/output/hardware/bitstreams
 BOOT_DIR=${ENVIRONMENT_DIR}/output/boot
 
 # TEST OMNIVISOR GUEST DIR
 OVERLAYFS_DIR=${ENVIRONMENT_DIR}/install
 ROOT_DIR=${OVERLAYFS_DIR}/root
-TEST_OMNV_GUEST_DIR=${ROOT_DIR}/tests/omnivisor
+TEST_OMNV_GUEST_DIR=${ROOT_DIR}/tests/test_omnivisor_guest

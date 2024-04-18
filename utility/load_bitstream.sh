@@ -1,14 +1,7 @@
 #!/bin/bash
 
 # DIRECTORIES
-CURRENT_DIR=$(dirname -- "$(readlink -f -- "$0")")
-TEST_OMNV_DIR=$(dirname "${CURRENT_DIR}")
-UTILITY_DIR=${TEST_OMNV_DIR}/utility
-TEST_DIR=$(dirname "${TEST_OMNV_DIR}")
-RUNPHI_DIR=$(dirname "${TEST_DIR}")
-RUNPHI_SCRIPTS_DIR=${RUNPHI_DIR}/scripts
-BITSTREAM_DIR=${RUNPHI_DIR}/environment/kria/jailhouse/output/hardware/bitstreams
-BOOT_DIR=${RUNPHI_DIR}/environment/kria/jailhouse/output/boot
+source "$(dirname "$0")/default_directories.sh"
 
 # BOARD INFO
 source ${UTILITY_DIR}/board_info.sh

@@ -2,17 +2,18 @@
 
 This folder contains a set of scripts to test the boot times of a virtual machine over local and remote processors.
 
-### Test Fast Script
+### Single Script Test
 
-To replicate the results for ECRTS, execute the following script:
+To replicate the results for ECRTS with a single script, execute the following script:
 
 ```bash
 ./ecrts_boot_tests.sh
 ```
+To replicate the test step by step continue reading.
 
 ### Prepare Images
 
-The test uses a set of images with different sizes for each processor. To create these images, you can use the following scripts:
+The test uses a set of images with different sizes for each processor. To create these images, use the following scripts:
 
 ```bash
 ./create_Images_APU.sh
@@ -20,7 +21,7 @@ The test uses a set of images with different sizes for each processor. To create
 ./create_Images_RPU.sh
 ```
 
-Once the images are ready, you need to copy them to the board directory. You can use the RunPHI script:
+Once the images are ready, copy them to the board directory using the script:
 
 ```bash
 ./scripts/remote/load_install_dir_to_remote.sh 

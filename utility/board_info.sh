@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # BOARD IP
-IP="10.210.1.150"
+IP="10.210.1.228"
 # BOARD SERIAL PORT
 SERIAL_PORT="/dev/daniele_kria_tty01"
 # BOARD PDU INDEX

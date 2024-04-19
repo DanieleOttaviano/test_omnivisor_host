@@ -1,6 +1,6 @@
 # **Test Omnivisor Host**
 
-This repository contains scripts and materials necessary to replicate experiments testing the Omnivisor (https://github.com/DanieleOttaviano/jailhouse).
+This repository contains scripts and materials to replicate the experiments on Omnivisor (https://github.com/DanieleOttaviano/jailhouse).
 
 ## Overview
 
@@ -36,4 +36,4 @@ Refer to the README in each directory under "experiments/" for detailed instruct
 
 ## Results
 
-Raw results are saved in the directory `test_omnnivisor_host/results`. Visualize the results using the provided notebook: `test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb`.
+Results can be visualized in the provided notebook: `test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb`.

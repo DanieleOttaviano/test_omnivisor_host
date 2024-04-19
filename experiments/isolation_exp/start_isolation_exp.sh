@@ -133,32 +133,8 @@ echo "Stopping Omnivisor"
 ssh root@${IP} "${BOARD_JAILHOUSE_PATH}/tools/jailhouse disable" # > /dev/null 2>&1
 # echo "/root/jailhouse/tools/jailhouse disable" > ${SERIAL_PORT}
 
-## STOP TEST
-if [[ $disturb == "APU" || $disturb == "ALL" ]]; then
-    # Stop APU membomb
-    echo "Stopping APU membomb"
-    ssh root@${IP} "killall bandwidth"
-    # echo "killall bandwidth" > ${SERIAL_PORT}
-fi
-if [[ $disturb == "RPU1" || $disturb == "ALL" ]]; then
-    # Stop RPU1 membomb
-    echo "Stopping RPU1 membomb"
-    ssh root@${IP} "echo stop > /sys/class/remoteproc/remoteproc1/state"
-    # echo "echo stop > /sys/class/remoteproc/remoteproc1/state" > ${SERIAL_PORT}
-fi
-if [[ $disturb == "FPGA" || $disturb == "ALL" ]]; then
-    # Stop traffic generators
-    echo "Stopping FPGA Traffic Generators"
-    ssh root@${IP} "devmem ${TRAFFIC_GENERATOR_1} 64 0"
-    ssh root@${IP} "devmem ${TRAFFIC_GENERATOR_2} 64 0"
-    ssh root@${IP} "devmem ${TRAFFIC_GENERATOR_3} 64 0"
-    # echo "devmem ${TRAFFIC_GENERATOR_1} 64 0" > ${SERIAL_PORT}
-    # echo "devmem ${TRAFFIC_GENERATOR_2} 64 0" > ${SERIAL_PORT}
-    # echo "devmem ${TRAFFIC_GENERATOR_3} 64 0" > ${SERIAL_PORT}
-fi
-
 # Save Results from memory (BOARD)
-ssh root@${IP} "${BOARD_UTILITY_DIR}/save_shm.sh ${TEST_NAME}"
+ssh root@${IP} "${BOARD_ISOLATION_EXP_PATH}/save_shm.sh ${TEST_NAME}"
 
 # Save Results
 if [[ ${SAVE} -eq 1 ]]; then

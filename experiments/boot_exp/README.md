@@ -37,7 +37,11 @@ Launch the script \`start_boot_exp.sh\` to run the experiments. The script initi
 - \`-h\` Help
 
 Example:
+```bash
+./start_boot_exp.sh -r 30 -c RPU -s
+```
 
+The following sequence of scripts replicate exactly the results of the paper:
 ```bash
 ./start_boot_exp.sh -r 100 -c APU -s
 ./start_boot_exp.sh -r 100 -c RPU -s

@@ -2,7 +2,7 @@
 
 This folder contains a set of scripts designed to evaluate the isolation capabilities of the Omnivisor in comparison with a Legacy hypervisor.
 
-### Test Fast Script
+### Single Script Test
 
 To replicate the ECRTS results, execute the following script:
 
@@ -34,6 +34,46 @@ Example:
 
 ```bash
 ./start_isolation_exp.sh -c RPU -d FPGA -S -T -s
+```
+
+The following sequence of scripts replicate exactly the results of the paper:
+```bash
+#Legacy Hypervisor 
+## Core under test:  RPU
+./start_isolation_exp.sh -c RPU -d RPU1 -s
+./start_isolation_exp.sh -c RPU -d APU -s
+./start_isolation_exp.sh -c RPU -d FPGA -s
+
+## Core under test: RISCV
+./start_isolation_exp.sh -c RISCV -d RPU1 -s
+./start_isolation_exp.sh -c RISCV -d APU -s
+./start_isolation_exp.sh -c RISCV -d FPGA -s
+
+# Omnivisor Spatial Isolation
+## Core under test: RPU
+./start_isolation_exp.sh -c RPU -d RPU1 -S  -s
+./start_isolation_exp.sh -c RPU -d APU -S  -s
+./start_isolation_exp.sh -c RPU -d FPGA -S  -s
+./start_isolation_exp.sh -c RPU -d ALL -S  -s
+
+## Core under test: RISCV
+./start_isolation_exp.sh -c RISCV -d RPU1 -S -s
+./start_isolation_exp.sh -c RISCV -d APU -S -s
+./start_isolation_exp.sh -c RISCV -d FPGA -S -s
+./start_isolation_exp.sh -c RISCV -d ALL -S -s
+
+# Full Omnivisor: Spatial and Temporal Isolation
+## Core under test: RPU
+./start_isolation_exp.sh -c RPU -d RPU1 -S -T -s
+./start_isolation_exp.sh -c RPU -d APU -S -T -s
+./start_isolation_exp.sh -c RPU -d FPGA -S -T -s
+./start_isolation_exp.sh -c RPU -d ALL -S -T -s
+
+## Core under test: RISCV
+./start_isolation_exp.sh -c RISCV -d RPU1 -S -T -s
+./start_isolation_exp.sh -c RISCV -d APU -S -T -s
+./start_isolation_exp.sh -c RISCV -d FPGA -S -T -s
+./start_isolation_exp.sh -c RISCV -d ALL -S -T -s
 ```
 
 **Results**

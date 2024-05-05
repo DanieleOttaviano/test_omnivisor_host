@@ -58,15 +58,6 @@ The results claims are the following:
 3. **Taclebench Experiments**:  
 The objective of this experiments is twofold: first, to demonstrate how the Omnivisor can induce controlled degradation in the execution time of a VM running on remote cores, and second, to elucidate how the Omnivisor streamlines the parameter tuning process for achieving an acceptable performance degradation level.
 
-## Prerequisites (if you want to reproduce the environment from scratch)
-
-Before running these scripts, ensure the following prerequisites are met:
-
-1. Install and configure the Omnivisor on your board using the RunPHI project available at: [RunPHI-project](https://dessert.unina.it:8088/ldesi/runphi/-/tree/main/scripts).
-2. Have Test_Omnivisor_Guest installed on the board filesystem, accessible at: [Test_Omnivisor_Guest](https://github.com/DanieleOttaviano/test_omnivisor_guest).
-3. Configure board-specific information (IP, serial, etc.) in the script: `test_omnivisor_host/utility/board_info.sh`.
-4. Configure the paths of the directories (RunPHI and Jailhouse/Omnivisor) in the script: `test_omnivisor_host/utility/default_directories.sh`.
-
 ## Running Experiments
 
 The following scripts can be used to produce the results: 

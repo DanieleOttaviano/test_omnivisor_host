@@ -9,7 +9,8 @@ To replicate the results for ECRTS with a single script, execute the following s
 ```bash
 ./ecrts_boot_tests.sh
 ```
-To replicate the test step by step continue reading.
+
+To replicate the test step-by-step continue reading.
 
 ### Prepare Images
 
@@ -24,7 +25,7 @@ The test uses a set of images with different sizes for each processor. To create
 Once the images are ready, copy them to the board directory using the script:
 
 ```bash
-./scripts/remote/load_install_dir_to_remote.sh 
+../../../../scripts/remote/load_install_dir_to_remote.sh
 ```
 
 **Launching Tests**

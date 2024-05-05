@@ -22,7 +22,7 @@ The test uses a set of images with different sizes for each processor. To create
 Once the images are ready, copy them to the board directory using the script:
 
 ```bash
-./scripts/remote/load_install_dir_to_remote.sh 
+../../../../scripts/remote/load_install_dir_to_remote.sh
 ```
 
 ### Launching Test

@@ -29,7 +29,7 @@ Once the images are ready, copy them to the board directory using the script:
 
 Launch the script `start_filestate_taclebench.sh` to run the experiments.
 
-It has to be run twice for each remove core (RPU, RISCV);
+It has to be run twice for each remote core (RPU, RISCV);
 the first execution with no disturb, to have a baseline for the binary search, the second time with disturb and a target slowdown to be reached through binary search.
 
 

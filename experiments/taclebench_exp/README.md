@@ -4,8 +4,18 @@ This directory contains a hierarchy of scripts to reproduce the taclebench tests
 
 ## Single script test
 
-To replicate the results for ECRTS with a single script, execute the following script:
+To replicate the results for ECRTS you can use the following script.
 
+To run each benchmark (on RPU and RISCV) without repetition (time ~= 35min):
+```bash
+./ecrts_taclebench_tests.sh
+```
+To run each benchmark (on RPU and RISCV) with 30 repetitions (time ~= 18 hours)
+```bash
+./ecrts_taclebench_tests.sh -p
+```
+
+To run each benchmark (on RPU and RISCV) with 30 repetitions and the binary search to optimize the bandwidth allocation (time ~= 4 days)
 ```bash
 ./ecrts_taclebench_tests.sh -b
 ```
@@ -31,7 +41,6 @@ Launch the script `start_filestate_taclebench.sh` to run the experiments.
 
 It has to be run twice for each remote core (RPU, RISCV);
 the first execution with no disturb, to have a baseline for the binary search, the second time with disturb and a target slowdown to be reached through binary search.
-
 
 
 The options to tweek to achive the results as in the paper are the following:

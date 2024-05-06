@@ -28,7 +28,7 @@ The tests aims to address the following questions:
 3. Can the Ominvisor be a turnkey solution to achieve controlled degradation?
 
 ### Experiments Organization
-To address the questions we provide three experiments the results of which are shown in the Fig.4, Fig.5 and Fig.6 in the paper.
+To address the questions we provide three experiments the results of which are shown in the Fig.4, Fig.6 and Fig.7 in the paper.
 1. **Boot Times**: Measure boot times of different configurations.
 2. **Isolation Experiments**: Evaluate isolation properties of Omnivisor.
 3. **Taclebench Experiments**: Benchmarking using Taclebench.

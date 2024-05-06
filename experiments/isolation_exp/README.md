@@ -33,12 +33,12 @@ To initiate a single isolation experiment, use the following script:
 
 This script starts the isolation test on the selected processor with the chosen disturbance sources:
 
-- -c \<core under isolation test\> (Options: RPU, RISCV)
-- -d \<source of disturbance\> (Options: APU, RPU1, FPGA, ALL)
-- -S Apply spatial isolation (enable XMPUs)
-- -T Apply temporal isolation (enable QoS + Memguard)
-- -s Save the results
-- -h Help
+- `-c <core under isolation test>` (Options: RPU, RISCV)
+- `-d <source of disturbance>` (Options: APU, RPU1, FPGA, ALL)
+- `-S` Apply spatial isolation (enable XMPUs)
+- `-T` Apply temporal isolation (enable QoS + Memguard)
+- `-s` Save the results
+- `-h` Help
 
 Example:
 

@@ -32,10 +32,10 @@ Once the images are ready, copy them to the board directory using the script:
 
 Launch the script \`start_boot_exp.sh\` to run the experiments. The script initiates the VM Boot test on a ZCU board on the specified processor:
 
-- \`-r \<repetitions\>\`
-- \`-c \<core\>\` (Options: APU, RPU, RISCV)
-- \`-s\` Save the results on the host machine
-- \`-h\` Help
+- -r \<repetitions\>
+- -c \<core\> (Options: APU, RPU, RISCV)
+- -s Save the results on the host machine
+- -h Help
 
 Example:
 ```bash

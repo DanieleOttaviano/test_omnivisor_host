@@ -88,4 +88,4 @@ The following sequence of scripts replicate exactly the results of the paper:
 
 **Results**
 
-The raw results are stored in the directory \`test_omnnivisor_host/results/isolation_results\`. Visualize the results using the provided notebook: \`test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb\`.
+The raw results are stored in the directory `test_omnnivisor_host/results/isolation_results`. Visualize the results using the provided notebook: `test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb`.

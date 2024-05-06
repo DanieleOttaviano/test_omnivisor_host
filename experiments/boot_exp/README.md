@@ -32,10 +32,10 @@ Once the images are ready, copy them to the board directory using the script:
 
 Launch the script \`start_boot_exp.sh\` to run the experiments. The script initiates the VM Boot test on a ZCU board on the specified processor:
 
-- -r \<repetitions\>
-- -c \<core\> (Options: APU, RPU, RISCV)
-- -s Save the results on the host machine
-- -h Help
+- `-r <repetitions>`
+- `-c <core>` (Options: APU, RPU, RISCV)
+- `-s` Save the results on the host machine
+- `-h` Help
 
 Example:
 ```bash
@@ -51,4 +51,4 @@ The following sequence of scripts replicate exactly the results of the paper:
 
 **Results**
 
-The raw results are saved in the directory \`test_omnnivisor_host/results/boot_results\`. Visualize the results using the provided notebook: \`test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb\`.
+The raw results are saved in the directory `test_omnnivisor_host/results/boot_results`. Visualize the results using the provided notebook: `test_omnnivisor_host/notebooks/Omnivisor_test_plots.ipynb`.

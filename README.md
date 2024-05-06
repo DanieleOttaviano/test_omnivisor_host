@@ -71,7 +71,7 @@ The following scripts can be used to produce the results:
 ```
 
 ```bash
-./experiments/taclebench_exp/ecrts_taclebench_tests.sh
+./experiments/taclebench_exp/ecrts_taclebench_tests.sh -b
 ```
 
 Refer to the README in each directory under "experiments/*" for detailed instructions on how to run these experiments step-by-step.

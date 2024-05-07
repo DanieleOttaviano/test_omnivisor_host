@@ -12,6 +12,7 @@ usage() {
       [-e <name_ext> saved file name extension]\r\n \
       [-f <file_state_name> save state on file with passed filename]\r\n \
       [-S <target_slowdown> binary search for target slowdown]\r\n \
+      [-q quick replicate the results of the paper, single exec both for unconstrained and best bendwidth constrained]\r\n \
       [-h help]" 1>&2
 
     exit 1
@@ -50,6 +51,7 @@ PRINT=0
 REPETITIONS=1
 KEEP=0
 SEARCH=0
+QUICK=0
 # TARGET_SLOWDOWN=1.2
 
 # Default values
@@ -87,7 +89,7 @@ it_under_target=1
 
 STATE_FILENAME=/dev/null
 
-while getopts "B:c:dTsphe:r:kS:f:" o; do
+while getopts "B:c:dTsphe:r:kS:f:q" o; do
     case "${o}" in
         B)
             BANDWIDTH=${OPTARG}
@@ -139,6 +141,15 @@ while getopts "B:c:dTsphe:r:kS:f:" o; do
             DISTURB=1
             SEARCH_ITERS=$REPETITIONS
             REPETITIONS=15
+            ;;
+        q)
+            SEARCH=1
+            QUICK=1
+            BANDWIDTH=$BOARD_MIN_APU_BANDWIDTH
+            # NAME_EXTENSION="${NAME_EXTENSION}_SEARCH.txt"
+            DISTURB=1
+            SEARCH_ITERS=$REPETITIONS
+            REPETITIONS=2
             ;;
         *)
             usage
@@ -223,7 +234,6 @@ if [[ "${DISTURB}" -eq "1" ]]; then
     # Start RPU1 membomb
     echo "Starting RPU1 membomb"
     timeout -s 2 ${TIMEOUT_MINUTES}m ssh root@${IP} "cd /lib/firmware;
-                    echo stop > /sys/class/remoteproc/remoteproc1/state;
                     echo RPU1-${core}-membomb-demo.elf > /sys/class/remoteproc/remoteproc1/firmware;
                     echo start > /sys/class/remoteproc/remoteproc1/state"
     if [[ $? -ne 0 ]]; then exit 43; fi
@@ -318,6 +328,8 @@ for bench_name in $directories; do
         
     fi
 
+    PREVIOUS_BENCH=0
+
     echo "${bench_name} KEEP=${KEEP} ${rep}"
     # break
 
@@ -341,6 +353,10 @@ for bench_name in $directories; do
 
 
     CURRENT_BENCH=$bench_name
+
+    if [[ $QUICK -eq 1 ]]; then
+        found_target_bandwidth=1
+    fi
     
 
     for ((; ! (rep >= ${REPETITIONS} && found_target_bandwidth); rep++)); do #rep<${REPETITIONS}
@@ -349,18 +365,37 @@ for bench_name in $directories; do
 
             if [[ $PREVIOUS_BENCH -eq 0 ]]; then
                 if [[ $rep -eq 0 ]]; then
+
                     LAST_BANDWIDTH=0
                     HIGHER_BOUND_BANDWIDTH=$BOARD_MAX_APU_BANDWIDTH
                     BANDWIDTH=$BOARD_MAX_APU_BANDWIDTH
                     LOWER_BOUND_BANDWIDTH=0
 
+                    # if [[ $QUICK -eq 0 || $rep -eq 0 ]]; then
+                        
+                    # else
+                    #     QUICK_BW=$(cat fixed_bandwidths/${bench_name}_${core})
+                    #     echo "READ BW $QUICK_BW"
+                    #     LAST_BANDWIDTH=$QUICK_BW
+                    #     HIGHER_BOUND_BANDWIDTH=$QUICK_BW
+                    #     BANDWIDTH=$QUICK_BW
+                    #     LOWER_BOUND_BANDWIDTH=$QUICK_BW
+                    # fi
+
                     # BANDWIDTH=$BOARD_MAX_APU_BANDWIDTH
                     # LAST_BANDWIDTH=$BOARD_MAX_APU_BANDWIDTH
                     last_slowdown=$TARGET_SLOWDOWN
 
-                else
 
-                    if [[ $it_under_target -eq 0 ]]; then
+                else
+                    if [[ $QUICK -eq 1 ]]; then
+                        QUICK_BW=$(cat fixed_bandwidths/${bench_name}_${core})
+                        echo "READ BW $QUICK_BW"
+                        LAST_BANDWIDTH=$QUICK_BW
+                        HIGHER_BOUND_BANDWIDTH=$QUICK_BW
+                        BANDWIDTH=$QUICK_BW
+                        LOWER_BOUND_BANDWIDTH=$QUICK_BW
+                    elif [[ $it_under_target -eq 0 ]]; then
                         TMP_BANDWIDTH=`echo "( ${BANDWIDTH} + ${LOWER_BOUND_BANDWIDTH} ) * .5" | bc -l`
                         HIGHER_BOUND_BANDWIDTH=$BANDWIDTH
                         BANDWIDTH=$TMP_BANDWIDTH
@@ -370,10 +405,11 @@ for bench_name in $directories; do
                         BANDWIDTH=$TMP_BANDWIDTH
                     fi
 
+
                 fi 
             fi
 
-            echo "[$(date +"%H:%M:%S")] APPLYING TEMP REGULATION"
+            echo "[$(date +"%H:%M:%S")] APPLYING TEMP REGULATION BANDWIDTH=${BANDWIDTH}"
             timeout -s 2 5m ssh root@${IP} "bash ${BOARD_UTILITY_DIR}/apply_temp_reg.sh -B ${BANDWIDTH} -r -f -a"
 
             if [[ $? -ne 0 ]]; then exit 43; fi
@@ -404,16 +440,25 @@ for bench_name in $directories; do
                 slowdown=`echo " $time/$baseline" | bc -l`
                 slowdowns_list="$slowdowns_list;$slowdown"
                 # echo "SLOWDOWN: $slowdown"
-                in_target=`echo "$slowdown < $TARGET_SLOWDOWN" | bc -l`
+                
+                if [[ $QUICK -eq 1 ]]; then
+                    in_target=$rep
+                else
+                    in_target=`echo "$slowdown < $TARGET_SLOWDOWN" | bc -l`
+                fi
+
                 # bw_ratio=`echo "$TARGET_SLOWDOWN / ( ${slowdown} + ${last_slowdown} )" | bc -l`
                 # echo "RATIO: $bw_ratio"
 
                 # echo "BELOW_TARGET_SLOWDOWN: ${in_target}" 
-                printf "%d,%d,%.10f,%d,%d,%.10f\n" ${rep} ${it} ${BANDWIDTH} ${time} ${in_target} ${slowdown}
+                # printf "%s\n" "${BANDWIDTH}"
+                # printf "%s\n" "${slowdown}"
+                # printf "%s\n" "${in_target}"
+                printf "%d,%d,%.10f,%d,%d,%.10f\n" ${rep} ${it} "${BANDWIDTH}" "${time}" "${in_target}" "${slowdown}"
 
                 if [[ ${SAVE} -eq 1 ]]; then
                     echo "SAVING"
-                    printf "%d,%d,%.10f,%d,%d,%.10f\n" ${rep} ${it} ${BANDWIDTH} ${time} ${in_target} ${slowdown} >> $FILENAME
+                    printf "%d,%d,%.10f,%d,%d,%.10f\n" ${rep} ${it} "${BANDWIDTH}" "${time}" "${in_target}" "${slowdown}" >> $FILENAME
                 fi
 
                 if [[ $in_target -eq 0 ]]; then
@@ -431,7 +476,7 @@ for bench_name in $directories; do
                     timeout_s=20
                 elif [[ `echo "${timeout_s} > ${TIMEOUT_SECONDS}" | bc` -eq 1 ]]; then
                     echo "Timeout prechange: ${timeout_s}"
-                    timeout_s=$TIMEOUT_SECONDS
+                    timeout_s=$TIMEOUT_SECONDS  
                 fi
             done
 

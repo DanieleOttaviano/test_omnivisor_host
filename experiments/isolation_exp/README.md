@@ -12,17 +12,6 @@ To replicate the ECRTS results, execute the following script:
 
 To replicate the test step by step continue reading.
 
-### Prepare Images
-To compile the VM under test that will be used in the tests, use the following scripts: 
-```bash
-./create_VMs_under_test.sh
-```
-Once the images are ready, copy them to the board directory using the script:
-
-```bash
-../../../../scripts/remote/load_install_dir_to_remote.sh
-```
-
 ### Launching Single Experiment
 
 To initiate a single isolation experiment, use the following script:

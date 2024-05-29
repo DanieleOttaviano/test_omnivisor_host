@@ -10,7 +10,7 @@ SRC_RISCV_DIR="${RISCV_DIR}/src"
 SRC_RISCV_BENCH_DIR="${RISCV_DIR}/src_bench"
 BENCH_DIR="${SRC_RPU_DIR}/bench"
 CELL_DIR="${JAILHOUSE_DIR}/configs/arm64"
-COMPILE_SCRIPT="${RUNPHI_SCRIPTS_DIR}/compile/jailhouse_compile.sh"
+COMPILE_SCRIPT="${SCRIPTS_DIR}/compile/jailhouse_compile.sh"
 OUTPUT_DIR="${TEST_OMNV_GUEST_DIR}/taclebench_exp/inmates"
 
 # Copy the files to the source directory

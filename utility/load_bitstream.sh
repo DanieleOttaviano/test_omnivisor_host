@@ -27,10 +27,10 @@ else
 fi
 
 # Compile BOOT.BIN
-bash ${RUNPHI_SCRIPTS_DIR}/compile/bootgen_compile.sh
+bash ${SCRIPTS_DIR}/compile/bootgen_compile.sh
 
 # Load BOOT.BIN on the board
-bash ${RUNPHI_SCRIPTS_DIR}/remote/load_boot_imgs_to_remote.sh -o
+bash ${SCRIPTS_DIR}/remote/load_boot_imgs_to_remote.sh -o
 
 # Sync board
 echo "sync" > ${SERIAL_PORT} 

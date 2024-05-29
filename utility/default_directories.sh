@@ -25,13 +25,13 @@ IMGS_DIR=${NOTEBOOKS_DIR}/imgs
 target="kria"
 backend="jailhouse"
 
-# RUNPHI DIRECTORIES
+# OMNIVISOR BASE DIRECTORIES
 TEST_DIR=$(dirname "${TEST_OMNV_HOST_DIR}")
-RUNPHI_DIR=$(dirname "${TEST_DIR}")
+BASE_DIR=$(dirname "${TEST_DIR}")
 # Hardcode for cross user exec
-RUNPHI_DIR="/home/daniele/projects/runphi"
-RUNPHI_SCRIPTS_DIR=${RUNPHI_DIR}/scripts
-ENVIRONMENT_DIR=${RUNPHI_DIR}/environment/${target}/${backend}
+# BASE_DIR=""
+SCRIPTS_DIR=${BASE_DIR}/scripts
+ENVIRONMENT_DIR=${BASE_DIR}/environment/${target}/${backend}
 JAILHOUSE_DIR=${ENVIRONMENT_DIR}/build/jailhouse
 JAIL_CONFIG_DIR=${JAILHOUSE_DIR}/include/jailhouse/config.h
 BITSTREAM_DIR=${ENVIRONMENT_DIR}/output/hardware/bitstreams

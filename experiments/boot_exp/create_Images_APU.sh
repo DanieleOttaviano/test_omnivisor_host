@@ -5,7 +5,7 @@ IMG_SIZES=(1 10 20 30 40 50 60 70 80 90)
 
 # DIRECTORIES
 source "$(dirname "$0")/../../utility/default_directories.sh"
-COMPILE_SCRIPT="${RUNPHI_SCRIPTS_DIR}/compile/jailhouse_compile.sh"
+COMPILE_SCRIPT="${SCRIPTS_DIR}/compile/jailhouse_compile.sh"
 SOURCE_FILE="${JAILHOUSE_DIR}/inmates/demos/arm/boot-demo.c"
 BINARY_DIR="${JAILHOUSE_DIR}/inmates/demos/arm64"
 CELL_DIR="${JAILHOUSE_DIR}/configs/arm64"

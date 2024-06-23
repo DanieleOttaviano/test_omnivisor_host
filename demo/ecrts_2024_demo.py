@@ -5,41 +5,22 @@ import signal
 import numpy as np
 
 from PySide6.QtWidgets import QApplication, QPushButton
+from PySide6 import QtWidgets
 from PySide6.QtCore import Slot, QRunnable, QThreadPool, QObject, Signal
-from PySide6.QtGui import Qt
+from PySide6.QtGui import Qt, QFont
 
 from matplotlib.backends.backend_qtagg import FigureCanvas
-from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 
 from ssh_test import *
 
-class BoardWorker(QRunnable):
-    
-    class Signals(QObject):
-        finished = Signal()
-        error = Signal(tuple)
-    
-    def __init__(self, fn):
-        super(BoardWorker, self).__init__()
-        
-        self.signals = BoardWorker.Signals()
-        self.fn = fn
-        
-    @Slot()
-    def run(self):
-        try:
-            self.fn()
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        finally:
-            self.signals.finished.emit()
-                
-    def close(self):
-        self._iterator._buf.close()
+class ConnectionInfo:
+
+    def __init__(self, ip, username, password):
+        self.ip = ip
+        self.username = username
+        self.password = password
 
 class ShmMemoryReaderWorker(QRunnable):
     
@@ -216,7 +197,7 @@ class TemporalIsolation(QtWidgets.QGroupBox):
 
 class UpdatableFigure(FigureCanvas):
     
-    def __init__(self, model, worker_getter, window_size=100, data_size=1000):
+    def __init__(self, model, worker_getter, window_size=100, data_size=1000, title=None):
         super().__init__(Figure(figsize=(5, 3)))
         
         self._worker_getter = worker_getter
@@ -290,6 +271,108 @@ class UpdatableFigure(FigureCanvas):
     def add_data(self, y):
         self.__update_data(y)
         self.__refresh_plot()
+
+class StatusBar(QtWidgets.QStatusBar):
+
+    def __init__(self):
+        super().__init__()
+
+    @Slot(None, result=None)
+    def loading(self):
+        self.showMessage("Setting up board")
+
+    
+    @Slot(None, result=None)
+    def success(self):
+        self.showMessage("Board ready")
+
+    
+    @Slot(tuple, result=None)
+    def error(self, err):
+        self.showMessage(f"[ERROR: {err[1]}], check connection info or reboot the board")
+
+class BoardWorker(QRunnable):
+    
+    class Signals(QObject):
+        begin = Signal()
+        success = Signal()
+        finished = Signal()
+        error = Signal(tuple)
+    
+    def __init__(self, fn, statusBar = None):
+        super(BoardWorker, self).__init__()
+        
+        self.signals = BoardWorker.Signals()
+        self.statusBar = statusBar
+        self.fn = fn
+
+        if statusBar:
+            self.signals.begin.connect(statusBar.loading)
+            self.signals.success.connect(statusBar.success)
+            self.signals.error.connect(statusBar.error)
+        
+    @Slot()
+    def run(self):
+        try:
+            self.signals.begin.emit()
+            self.fn()
+            self.signals.success.emit()
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        finally:
+            self.signals.finished.emit()
+                
+    def close(self):
+        self._iterator._buf.close()
+
+class CustomDialog(QtWidgets.QDialog):
+
+    submitted = Signal(ConnectionInfo)
+
+    def __init__(self, connection_info: ConnectionInfo, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("HELLO!")
+
+        self.ip_input = QtWidgets.QLineEdit(
+            # label='Board ip',
+            text=connection_info.ip
+        )
+        self.user_input = QtWidgets.QLineEdit(
+            # label='Board username',
+            text=connection_info.username
+        )
+        self.pass_input = QtWidgets.QLineEdit(
+            # label='Board password',
+            text=connection_info.password
+        )
+
+        # QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox.accepted.connect(self.submit)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(QtWidgets.QLabel("Board ip"))
+        self.layout.addWidget(self.ip_input)
+        self.layout.addWidget(QtWidgets.QLabel("Board username"))
+        self.layout.addWidget(self.user_input)
+        self.layout.addWidget(QtWidgets.QLabel("Board password"))
+        self.layout.addWidget(self.pass_input)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
+    def submit(self):
+        self.submitted.emit(
+            ConnectionInfo(
+                self.ip_input.text(),
+                self.user_input.text(),
+                self.pass_input.text()))
+        self.accept()
 
 class ApplicationWindow(QtWidgets.QMainWindow):
         
@@ -365,6 +448,33 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         return cores
 
+    def connect(self):
+        worker = BoardWorker(self._board.setup_board, statusBar=self.statusBar)
+        worker.signals.begin.connect(self.connecting)
+        worker.signals.success.connect(self.connected)
+        worker.signals.error.connect(self.unconnected)
+        self.threadpool.start(worker)
+
+    @Slot(ConnectionInfo, result=None)
+    def setNewConnectionInfo(self, connection_info):
+        self.connection_info = connection_info
+        self._board.update_connection_info(
+            connection_info.ip,
+            connection_info.username,
+            connection_info.password)
+        self.connect()
+
+    @Slot(None, result=None)
+    def showConnectionInfoDialog(self):
+        dlg = CustomDialog(self.connection_info, self)
+        dlg.submitted.connect(self.setNewConnectionInfo)
+        dlg.exec()
+
+    
+    @Slot(None, result=None)
+    def rebootBoard(self):
+        print("DA IMPLEMENTARE, ODOPRICO")
+
     def __init__(self):
         super().__init__()
         
@@ -373,7 +483,18 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self._main = QtWidgets.QWidget()
         self.setCentralWidget(self._main)
 
-        self._board = BoardInterface(debug=True, crash_by_timeout_threshold=4)
+        self.connection_info = ConnectionInfo(
+            ip='10.210.1.7',
+            username='root',
+            password='root')
+
+        self._board = BoardInterface(
+            ip=self.connection_info.ip,
+            username=self.connection_info.username,
+            password=self.connection_info.password,
+            debug=True,
+            crash_by_timeout_threshold=4)
+            
         self._model = self._board._model
         
         cores = self.__create_group_box("Cores", self.__create_cores_widgets(self._model._remote_cores, self._board.toggle_remote_core))
@@ -383,6 +504,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         mainLayout = QtWidgets.QVBoxLayout(self._main)
         content = QtWidgets.QWidget()
+        self.content = content
         contentLayout = QtWidgets.QHBoxLayout(content)
         mainLayout.addWidget(content, stretch=1)
 
@@ -393,46 +515,81 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         
         plots = QtWidgets.QVBoxLayout()
         for core in self._model._remote_cores:
+            # tmp = QtWidgets.QWidget()
+            # tmp_layout = QtWidgets.QVBoxLayout(tmp)
+
+            tmp_cntr = QtWidgets.QHBoxLayout()
+            
+            label = QtWidgets.QLabel(f"{core} execution time plot")
+            label.setAlignment(Qt.AlignHCenter)
+            label.setFont(QFont('Arial', 16)) 
+            tmp_cntr.addWidget(label)
+            tmp_cntr.setAlignment(Qt.AlignHCenter)
+
+            # tmp_layout.addLayout(tmp_cntr)
+
             plot = UpdatableFigure(
                 self._model._remote_cores[core], 
                 lambda core=core, *args, **kwargs: self.get_core_iterator(core, *args, **kwargs), 
                 window_size=100)
-            plots.addWidget(plot)
+            # tmp_layout.addWidget(plot, stretch=1)
+
+            # tmp_layout.setAlignment(Qt.AlignHCenter)
+            plots.addLayout(tmp_cntr, stretch=0)
+            plots.addWidget(plot, stretch=1)
         # plots.addWidget(rpu)
         # plots.addWidget(riscv)
         
         contentLayout.addLayout(plots, stretch=1)
 
-        button = QPushButton("Clear shm")
-        button.clicked.connect(lambda _: self._board.clear_shm())
-        
-        sideLayout = QtWidgets.QVBoxLayout()
-        sideLayout.addWidget(cores)
-        sideLayout.addWidget(disturbs)
-        sideLayout.addWidget(self.spatialIsolation)
-        sideLayout.addWidget(self.temporalIsolation)
-        sideLayout.addWidget(button)
+        self.rebootBtn = QPushButton("Reboot board")
+        # button = QPushButton("Clear shm")
+        self.rebootBtn.clicked.connect(self.rebootBoard)
 
-        statusBar = QtWidgets.QStatusBar()
+        self.settingsBtn = QPushButton("Board connection info")
+        self.settingsBtn.clicked.connect(self.showConnectionInfoDialog)
+
+        sideLayout = QtWidgets.QVBoxLayout()
+
+        self.sideContent = QtWidgets.QWidget()
+        sideLayout_sub = QtWidgets.QVBoxLayout(self.sideContent)
+        sideLayout_sub.addWidget(cores)
+        sideLayout_sub.addWidget(disturbs)
+        sideLayout_sub.addWidget(self.spatialIsolation)
+        sideLayout_sub.addWidget(self.temporalIsolation)
+
+        sideLayout.addWidget(self.sideContent)
+        sideLayout.addWidget(self.rebootBtn)
+        sideLayout.addWidget(self.settingsBtn)
+
+        self.statusBar = StatusBar()
         contentLayout.addLayout(sideLayout, stretch=0)
         
-        mainLayout.addWidget(statusBar)
+        mainLayout.addWidget(self.statusBar)
         
-        content.setEnabled(False)
+        # content.setEnabled(False)
         
-        worker = BoardWorker(lambda b=statusBar: self._test(self._board.setup_board, b))
-        worker.signals.finished.connect(lambda l=content, b=statusBar: self._test1(l.setEnabled, b))
-        self.threadpool.start(worker)
-        
-    def _test(self, fn, bar):
-        bar.showMessage("Setting up board")
-        # print("PM")
-        # time.sleep(1)
-        fn()
-        
-    def _test1(self, fn, bar):
-        fn(True)
-        bar.showMessage("Board ready")
+        self.connect()
+
+    
+    @Slot(None, result=None)
+    def connecting(self):
+        self.sideContent.setEnabled(False)
+        self.settingsBtn.setEnabled(False)
+        self.rebootBtn.setEnabled(False)
+
+    @Slot(None, result=None)
+    def connected(self):
+        self.sideContent.setEnabled(True)
+        self.settingsBtn.setEnabled(False)
+        self.rebootBtn.setEnabled(False)
+
+    
+    @Slot(None, result=None)
+    def unconnected(self):
+        self.sideContent.setEnabled(False)
+        self.settingsBtn.setEnabled(True)
+        self.rebootBtn.setEnabled(True)
 
 if __name__ == "__main__":
 

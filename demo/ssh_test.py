@@ -97,6 +97,12 @@ class OmnivisorModel:
         self._spatial_isolation_callback = []
         self._temporal_isolation_callback = []
         self._temporal_bandwidth_callback = []
+
+    def reset(self):
+        self._active = False
+        self._spatial_isolation = False
+        self._temporal_isolation = False
+        self._temporal_bw = 480
         
     def is_active(self):
         return self._active
@@ -182,15 +188,22 @@ class OmnivisorModel:
 class RemoteCoreModel:
         
     def __init__(self, crash_by_timeout_threshold = 10):
+        self._threshold = crash_by_timeout_threshold
+
         self._active = False
         self._faulty = False
         self._crashed = False
-        self._threshold = crash_by_timeout_threshold
         self._count = 0
 
         self._active_callback = []
         self._faulty_callback = []
         self._crashed_callback = []
+
+    def reset(self):
+        self._active = False
+        self._faulty = False
+        self._crashed = False
+        self._count = 0
 
     def is_active(self):
         return self._active
@@ -282,21 +295,32 @@ class DisturbModel:
         if self._activation_callback:
             self._activation_callback(active)
 
+    def reset(self):
+        self._active = False
+
 class BoardModel:
 
     def __init__(self, **kwargs):
         self._reachable = None
         self._omnivisor = OmnivisorModel()
         self._remote_cores = {}
+        self._disturbs = {}
         
         for core in ['RPU', 'RISCV']:
             self._remote_cores[core] = RemoteCoreModel(**kwargs)
         
-        self._disturbs = {
-            'APU' : DisturbModel(),
-            'RPU1' : DisturbModel(),
-            'FPGA' : DisturbModel(),
-        }
+        for disturb in ['APU', 'RPU1', 'FPGA']:
+            self._disturbs[disturb] = DisturbModel()
+
+
+    def reset(self):
+        self._omnivisor.reset()
+
+        for remote_core in self._remote_cores.values():
+            remote_core.reset()
+
+        for disturb in self._disturbs.values():
+            disturb.reset()
         
     # def setReacheability(self, reachable):
     #     self.
@@ -384,7 +408,7 @@ class BoardController:
             conn = self._unsafe_connect()
             _opened = True
 
-        _, ssh_stdout, ssh_stderr = conn.exec_command(command)
+        _, ssh_stdout, ssh_stderr = conn.exec_command(command, timeout=5)
 
         if not ssh_stdout.channel.recv_exit_status() == 0:
             raise(BoardRemoteExeception(''.join(ssh_stderr.readlines()), ''.join(ssh_stdout.readlines())))
@@ -412,7 +436,7 @@ class BoardController:
     def _unsafe_connect(self, **kwargs):
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
-        ssh.connect(self._ip, username=self._username, password=self._password)
+        ssh.connect(self._ip, username=self._username, password=self._password, timeout=5)
         return ssh
 
     def _unsafe_omivisor_toggle(self, state=None, spatial=False, **kwargs):
@@ -477,7 +501,7 @@ class BoardController:
                 print(e)
                 print(traceback.format_exc())
 
-    def __init__(self, ip='10.210.1.228', username='root', password='root', debug=False):
+    def __init__(self, ip, username, password, debug=False):
 
         self._debug=debug
         self._ip=ip
@@ -491,6 +515,11 @@ class BoardController:
         self._lock = threading.Lock()
 
         # self._try_run(self._unsafe_init)
+
+    def update_connection_info(self, ip, username, password):
+        self._ip=ip
+        self._username=username
+        self._password=password
 
     def toggle_omnivisor(self, state):
         self._try_run(self._unsafe_omivisor_toggle, state=state)
@@ -524,7 +553,7 @@ class BoardController:
 
 class BoardInterface:
     
-    def __init__(self, ip='10.210.1.228', username='root', password='root', debug=False, **kwargs):
+    def __init__(self, ip, username, password, debug=False, **kwargs):
         self._model = BoardModel(**kwargs)
         self._controller = BoardController(ip=ip, username=username, password=password, debug=debug)
         self._lock = threading.Lock()
@@ -535,9 +564,13 @@ class BoardInterface:
                 return getattr(self._controller, fn_name)(*args, **kwargs)
             except AttributeError:
                 raise BoardException(f"Function {fn_name} not found in controller")
+
+    def update_connection_info(self, ip, username, password):
+        self._controller.update_connection_info(ip, username, password)
             
     def setup_board(self):
         self._call_controller_fn('setup_board')
+        self._model.reset()
         
     def toggle_omnivisor(self, state):
         self._call_controller_fn('toggle_omnivisor', state)
